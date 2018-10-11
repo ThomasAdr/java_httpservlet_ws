@@ -126,20 +126,13 @@ public class PersonsServlet extends HttpServlet {
 			/* This BufferedReader will containt our request URI */
 
 	    /* To simplify the hack, assume that the PUT request has exactly
-	       two parameters: the id and either who or what. Assume, further,
+	       two parameters: the id and either our surname or name. Assume, further,
 	       that the id comes first. From the client side, a hash character
 	       # separates the id and the who/what, e.g.,
 
-	          id=33#who=Homer Allision
+	          id=33#surname=Jude
 	    */
-			String[] args = data.split("#");      // id in args[0], rest in args[1]
-			String[] parts1 = args[0].split("="); // id = parts1[1]
-			key = parts1[1];
-
-			String[] parts2 = args[1].split("="); // parts2[0] is key
-			if (parts2[0].contains("who")) who = true;
-			rest = parts2[1];
-
+	    
 			/* ------------------ */
 
 			/* id=33#surname=Jude#name=Allision#comment=This Is The Best Comment Ever */
