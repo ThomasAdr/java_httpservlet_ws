@@ -132,7 +132,7 @@ public class PersonsServlet extends HttpServlet {
 
 	          id=33#surname=Jude
 	    */
-	    
+
 			/* ------------------ */
 
 			/* id=33#surname=Jude#name=Allision#comment=This Is The Best Comment Ever */
@@ -149,7 +149,7 @@ public class PersonsServlet extends HttpServlet {
 			/* Putting them into an array */
 			/* Working with parameter 2 */
 			String[] parts2 = args[1].split("="); // parts2[0] is key
-			if (parts2[0].contains("surname")) surname = true;
+			if (parts2[0].contains("surname")) sur = true;
 			surname = parts2[1];
 
 
