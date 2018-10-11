@@ -101,7 +101,7 @@ public class PersonsServlet extends HttpServlet {
 		persons.addPersonToDB();
 		sendResponse(response, persons.toXML(msg), false);
 	}
-
+  
 	// DELETE /java_httServlet_ws?id=1
 	@Override
 	public void doDelete(HttpServletRequest request, HttpServletResponse response) {
