@@ -152,6 +152,7 @@ public class PersonsServlet extends HttpServlet {
 			if (parts2[0].contains("surname")) sur = true;
 			surname = parts2[1];
 
+
 		}
 		catch(Exception e) {
 			throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
