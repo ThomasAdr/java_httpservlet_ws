@@ -101,6 +101,88 @@ public class PersonsServlet extends HttpServlet {
 		persons.addPersonToDB();
 		sendResponse(response, persons.toXML(msg), false);
 	}
+
+	// PUT /java_httServlet_ws
+	// HTTP body should contain at least two keys: the person's id
+	// and either his/her name, surname or comment.
+	@Override
+	public void doPut(HttpServletRequest request, HttpServletResponse response) {
+	/* A workaround is necessary for a PUT request because neither Tomcat
+	   nor Jetty generates a workable parameter map for this HTTP verb.
+	   In other words, there is no map generated when parameters are added
+	   the common way to the request. We will have to generate this map ourselves */
+		String key = null;
+		String comment = null;
+		String name = null;
+		String surname = null;
+		boolean sur = false;
+		boolean nam = false;
+		boolean com = false;
+
+		/* Let the hack begin. */
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream()));
+			String data = br.readLine();
+			/* This BufferedReader will containt our request URI */
+
+	    /* To simplify the hack, assume that the PUT request has exactly
+	       two parameters: the id and either our surname or name. Assume, further,
+	       that the id comes first. From the client side, a hash character
+	       # separates the id and the who/what, e.g.,
+
+	          id=33#surname=Jude
+	    */
+
+			/* ------------------ */
+
+			/* id=33#surname=Jude#name=Allision#comment=This Is The Best Comment Ever */
+
+			/* Splitting the whole URI to get parameter name + value combo */
+			/* Putting them into an array */
+			String[] args = data.split("#");      // id in args[0], rest in args[1]
+			/* Splitting the parameter name + value combo to get each part individually */
+			/* Putting them into an array */
+			/* Working with parameter 1 */
+			String[] parts1 = args[0].split("="); // id = parts1[1]
+			key = parts1[1];
+			/* Splitting the parameter name + value combo to get each part individually */
+			/* Putting them into an array */
+			/* Working with parameter 2 */
+			String[] parts2 = args[1].split("="); // parts2[0] is key
+			if (parts2[0].contains("surname")) sur = true;
+			surname = parts2[1];
+
+
+		}
+		catch(Exception e) {
+			throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+
+		// If no key, then the request is ill formed.
+		if (key == null)
+			throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+
+		// Look up the specified person.
+		Person p = persons.getMap().get(new Integer(key.trim()));
+		String msg;
+		if (p == null) { // not found?
+			msg = key + " does not map to a Person.\n";
+			sendResponse(response, persons.toXML(msg), false);
+		}
+		else { // found
+			if (surname == null) {
+				throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+			}
+			// Do the editing.
+			else {
+				if (sur) p.setSurname(surname);
+				// else  p.setWhat(rest);
+
+				msg = "Person " + key + " has been edited.\n";
+				sendResponse(response, persons.toXML(msg), false);
+			}
+		}
+	}
   
 	// DELETE /java_httServlet_ws?id=1
 	@Override
