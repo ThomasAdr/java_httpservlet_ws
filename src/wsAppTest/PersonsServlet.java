@@ -171,8 +171,9 @@ public class PersonsServlet extends HttpServlet {
 
 		// Look up the specified person.
 		Person p = persons.getMap().get(new Integer(key.trim()));
+		String msg;
 		if (p == null) { // not found?
-			String msg = key + " does not map to a Person.\n";
+			msg = key + " does not map to a Person.\n";
 			sendResponse(response, persons.toXML(msg), false);
 		}
 		else { // found
@@ -184,7 +185,7 @@ public class PersonsServlet extends HttpServlet {
 				if (sur) p.setSurname(surname);
 				else // p.setWhat(rest);
 
-				String msg = "Person " + key + " has been edited.\n";
+				msg = "Person " + key + " has been edited.\n";
 				sendResponse(response, persons.toXML(msg), false);
 			}
 		}
