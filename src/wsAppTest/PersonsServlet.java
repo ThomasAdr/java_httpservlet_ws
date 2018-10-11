@@ -176,7 +176,7 @@ public class PersonsServlet extends HttpServlet {
 			// Do the editing.
 			else {
 				if (sur) p.setSurname(surname);
-				else // p.setWhat(rest);
+				// else  p.setWhat(rest);
 
 				msg = "Person " + key + " has been edited.\n";
 				sendResponse(response, persons.toXML(msg), false);
