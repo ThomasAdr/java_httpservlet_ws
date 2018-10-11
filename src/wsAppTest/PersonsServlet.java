@@ -28,8 +28,8 @@ public class PersonsServlet extends HttpServlet {
 	persons.setServletContext(this.getServletContext());
     }
 
-    // GET /persons
-    // GET /persons?id=1
+    // GET /java_httServlet_ws
+    // GET /java_httServlet_ws?id=1
     // If the HTTP Accept header is set to application/json (or an equivalent
     // such as text/x-json), the response is JSON and XML otherwise.
     @Override
@@ -74,7 +74,7 @@ public class PersonsServlet extends HttpServlet {
 	}
     }
 
-	// POST /persons
+	// POST /java_httServlet_ws
 	// HTTP body should contain three keys, one for the name ("name"), one for the surname ("surname") and
 	// another for the comment ("comment").
 	@Override
@@ -101,8 +101,8 @@ public class PersonsServlet extends HttpServlet {
 		persons.addPersonToDB();
 		sendResponse(response, persons.toXML(msg), false);
 	}
-
-	// DELETE /predictions2?id=1
+  
+	// DELETE /java_httServlet_ws?id=1
 	@Override
 	public void doDelete(HttpServletRequest request, HttpServletResponse response) {
 		String param = request.getParameter("id");
