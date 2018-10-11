@@ -102,6 +102,23 @@ public class PersonsServlet extends HttpServlet {
 		sendResponse(response, persons.toXML(msg), false);
 	}
 
+	// DELETE /predictions2?id=1
+	@Override
+	public void doDelete(HttpServletRequest request, HttpServletResponse response) {
+		String param = request.getParameter("id");
+		Integer key = (param == null) ? null : new Integer(param.trim());
+		// Only one Prediction can be deleted at a time.
+		if (key == null)
+			throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+		try {
+			persons.getMap().remove(key);
+			String msg = "Person " + key + " removed.\n";
+			sendResponse(response, persons.toXML(msg), false);
+		}
+		catch(Exception e) {
+			throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	// Method Not Allowed
     @Override
