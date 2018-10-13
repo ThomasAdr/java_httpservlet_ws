@@ -1,5 +1,6 @@
 package persons2;
 
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -7,14 +8,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.http.HTTPException;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.beans.XMLEncoder;
+import org.json.JSONTokener;
 import org.json.JSONObject;
 import org.json.XML;
+import org.json.HTTP;
+import java.io.InputStream;
+import java.io.IOException;
+
 
 public class PersonsServlet extends HttpServlet {
     private Persons persons; // back-end bean
@@ -102,86 +109,61 @@ public class PersonsServlet extends HttpServlet {
 		sendResponse(response, persons.toXML(msg), false);
 	}
 
+
+
 	// PUT /java_httServlet_ws
 	// HTTP body should contain at least two keys: the person's id
 	// and either his/her name, surname or comment.
 	@Override
 	public void doPut(HttpServletRequest request, HttpServletResponse response) {
-	/* A workaround is necessary for a PUT request because neither Tomcat
-	   nor Jetty generates a workable parameter map for this HTTP verb.
-	   In other words, there is no map generated when parameters are added
-	   the common way to the request. We will have to generate this map ourselves */
-		String key = null;
-		String comment = null;
-		String name = null;
-		String surname = null;
-		boolean sur = false;
-		boolean nam = false;
-		boolean com = false;
-
-		/* Let the hack begin. */
+	// Building the JSONString the easy way
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream()));
-			String data = br.readLine();
-			/* This BufferedReader will containt our request URI */
+			InputStream inputStream = request.getInputStream();
+			if (inputStream != null) {
 
-	    /* To simplify the hack, assume that the PUT request has exactly
-	       two parameters: the id and either our surname or name. Assume, further,
-	       that the id comes first. From the client side, a hash character
-	       # separates the id and the who/what, e.g.,
+				// This parses the incoming JSON from the request body.
+				String jsonData = new BufferedReader(new InputStreamReader(inputStream)) .lines().collect(Collectors.joining("\n"));
 
-	          id=33#surname=Jude
-	    */
+				// JsonObject needs the previously parsed JsonString for his constructor.
+				// It Creates a new JSONObject with name/value mappings from the JSON string.
+				// A JSONObject kind of looks like a map
+				// A JSONObject is an unordered collection of zero or more name/value pairs.
+				// It provides unmodifiable map view to the JSON object name/value mappings.
 
-			/* ------------------ */
+				JSONObject jObj = new JSONObject(jsonData);
 
-			/* id=33#surname=Jude#name=Allision#comment=This Is The Best Comment Ever */
+				Iterator<String> it = jObj.keys();
 
-			/* Splitting the whole URI to get parameter name + value combo */
-			/* Putting them into an array */
-			String[] args = data.split("#");      // id in args[0], rest in args[1]
-			/* Splitting the parameter name + value combo to get each part individually */
-			/* Putting them into an array */
-			/* Working with parameter 1 */
-			String[] parts1 = args[0].split("="); // id = parts1[1]
-			key = parts1[1];
-			/* Splitting the parameter name + value combo to get each part individually */
-			/* Putting them into an array */
-			/* Working with parameter 2 */
-			String[] parts2 = args[1].split("="); // parts2[0] is key
-			if (parts2[0].contains("surname")) sur = true;
-			surname = parts2[1];
+				// To loop through the JSONObject, we have to use an Iterator, the same way we can loop through a Map.
 
+				while(it.hasNext())
+				{
+					String key = it.next(); // get key
+					Object o = jObj.get(key); // get value
+					System.out.println(key + " : " +  o); // print the key and value
+				}
 
-		}
-		catch(Exception e) {
-			throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		}
-
-		// If no key, then the request is ill formed.
-		if (key == null)
-			throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
-
-		// Look up the specified person.
-		Person p = persons.getMap().get(new Integer(key.trim()));
-		String msg;
-		if (p == null) { // not found?
-			msg = key + " does not map to a Person.\n";
-			sendResponse(response, persons.toXML(msg), false);
-		}
-		else { // found
-			if (surname == null) {
-				throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+			} else {
+				// Do smth
 			}
-			// Do the editing.
-			else {
-				if (sur) p.setSurname(surname);
-				// else  p.setWhat(rest);
-
-				msg = "Person " + key + " has been edited.\n";
-				sendResponse(response, persons.toXML(msg), false);
-			}
+		} catch (IOException ex) {
+			// throw ex;
 		}
+
+    	/*
+		// Other way, with a function used to create the JSONString
+
+		// this parses the incoming JSON from the body.
+		JSONObject jObj = new JSONObject(getBody(request));
+		Iterator<String> it = jObj.keys();
+
+		while(it.hasNext())
+		{
+			String key = it.next(); // get key
+			Object o = jObj.get(key); // get value
+			System.out.println(key + " : " +  o); // print the key and value
+		}
+		*/
 	}
   
 	// DELETE /java_httServlet_ws?id=1
@@ -236,5 +218,41 @@ public class PersonsServlet extends HttpServlet {
 	catch(Exception e) {
 	    throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	}
-    }
+}
+
+	public static String getBody(HttpServletRequest request)  {
+
+		String body = null;
+		StringBuilder stringBuilder = new StringBuilder();
+		BufferedReader bufferedReader = null;
+
+		try {
+			InputStream inputStream = request.getInputStream();
+			if (inputStream != null) {
+				bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+				char[] charBuffer = new char[128];
+				int bytesRead = -1;
+				while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
+					stringBuilder.append(charBuffer, 0, bytesRead);
+				}
+			} else {
+				stringBuilder.append("");
+			}
+		} catch (IOException ex) {
+			// throw ex;
+			return "";
+		} finally {
+			if (bufferedReader != null) {
+				try {
+					bufferedReader.close();
+				} catch (IOException ex) {
+
+				}
+			}
+		}
+
+		body = stringBuilder.toString();
+		return body;
+	}
+
 }     
